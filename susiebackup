@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+  # set variables
+pg_dump="pg_dump"
+dump_path="$HOME/backup/"
+current_date="$(date +%Y-%m-%d__%H-%M-%S)"
+backup_file="$dump_path$current_date.backup"
+log_file="$dump_path$current_date.log"
+recipient="ryan@sierrautility.net"
+
+  # check dependencies
+if [[ ! -d "$dump_path" ]]; then
+  printf "FATAL: Directory not found: $dump_path" | mutt "$recipient" -s "SUSIE backup failed"
+  exit 1
+fi
+
+if ! type "$pg_dump" 1> /dev/null; then
+  echo "pg_dump not found: $pg_dump"
+  echo "$0: FATAL. Files not found." | mutt "$recipient" -s "SUSIE backup failed"
+  exit 1
+fi
+
+#
+# Do your business
+#
+echo "using backup file... $backup_file"
+echo "using log file... $log_file"
+
+echo "Executing pg_dump..."
+pg_dump --host localhost --port 5432 --username "postgres" --format tar --encoding UTF8 --verbose --file $backup_file susie &>> "$log_file"
+pgdump_exit="$?"
+echo "pg_dump process returned exit code: $pgdump_exit" | tee --append "$log_file"
+
+#
+# compress the backup
+#
+if type xz &> /dev/null; then
+  xz -v "$backup_file" && backup_file="$backup_file".xz
+  xz -v "$log_file" && log_file="$log_file".xz
+elif type bzip2 &> /dev/null; then
+  bzip2 -v "$backup_file" && backup_file="$backup_file".bz2
+  bzip2 -v "$log_file" && log_file="$log_file".bz2
+else
+  echo "$(realpath $0): FATAL. Archiver not found. The backup file could not be compressed, so it was not sent." | mutt "$recipient" -s "SUSIE backup failed"
+  exit 1
+fi
+
+#
+# Check size of the backup
+#
+# If larger than 8mb, don't try to email it
+
+#
+# Send an email
+#
+
+#pager test.mail
+printf "Attachment $(file --brief --preserve-date --mime-type --mime-encoding -L $backup_file) \r pg_dump process returned exit code: $pgdump_exit" | mutt "$recipient" -s "SUSIE backup for $(date)" -a "$backup_file" "$log_file"
