@@ -63,7 +63,6 @@ done
 #
 # Variables {{{1
 #
-pg_dump="pg_dump"
 dump_path="$HOME/backup/"
 current_date="$(date +%Y-%m-%d__%H-%M-%S)"
 backup_file="$dump_path$current_date.backup"
@@ -81,9 +80,8 @@ if [[ ! -d "$dump_path" ]]; then
   exit 1
 fi
 
-if ! type "$pg_dump" 1> /dev/null; then
-  echo "pg_dump not found: $pg_dump"
-  echo "$0: FATAL. Files not found." | mutt "$recipient" -s "SUSIE backup failed"
+if ! type pg_dump &> /dev/null; then
+  printf "$0: FATAL. pg_dump not found." | mutt "$recipient" -s "SUSIE backup failed"
   exit 1
 fi
 
