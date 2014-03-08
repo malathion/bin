@@ -1,6 +1,68 @@
 #!/usr/bin/env bash
+# GNU bash, version 4.2.25(1)-release (x86_64-pc-linux-gnu)
+#
+# © Copyright 2014-03-07 Ryan Delaney. All rights reserved.
+# This work is distributed WITHOUT ANY WARRANTY whatsoever; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the README file for additional terms and conditions on your use of this
+# software.
+#
 
-  # set variables
+#
+# Usage {{{1
+#
+usage() {
+cat <<EOD
+susiebackup
+© Copyright 2014-03-07 Ryan Delaney. All rights reserved.
+Web site: http://github.com/rpdelaney
+
+susiebackup backs up 'susie', a proprietary relational database in postgreSQL.
+Dumps are compressed and, unless they are too large, emailed to RECIPIENT.
+
+Usage: susiebackup [OPTION] RECIPIENT
+
+Options
+  -?, --help                  print this help and exit
+  -v, --verbose               increase verbosity
+EOD
+exit 1
+}
+
+#
+# Arguments {{{1
+#
+while :
+do
+  case $1 in
+    --help | -\?)
+      #  Call your Help() or usage() function here.
+      usage
+      exit 0
+      ;;
+    -v | --verbose)
+      # Each instance of -v adds 1 to verbosity
+      verbose=$((verbose+1))
+      shift
+      ;;
+    --) # End of all options
+      shift
+      break
+      ;;
+    -*)
+      echo "WARN: Unknown option (ignored): $1" >&2
+      shift
+      ;;
+    *)  # no more options. Stop while loop
+      break
+      ;;
+  esac
+done
+
+
+#
+# Variables {{{1
+#
 pg_dump="pg_dump"
 dump_path="$HOME/backup/"
 current_date="$(date +%Y-%m-%d__%H-%M-%S)"
@@ -21,7 +83,7 @@ if ! type "$pg_dump" 1> /dev/null; then
 fi
 
 #
-# Do your business
+# Dump {{{1
 #
 echo "using backup file... $backup_file"
 echo "using log file... $log_file"
@@ -32,7 +94,7 @@ pgdump_exit="$?"
 echo "pg_dump process returned exit code: $pgdump_exit" | tee --append "$log_file"
 
 #
-# compress the backup
+# Compress {{{1
 #
 if type xz &> /dev/null; then
   xz -v "$backup_file" && backup_file="$backup_file".xz
@@ -45,14 +107,19 @@ else
   exit 1
 fi
 
-#
+# Email {{{1
+
 # Check size of the backup
 #
 # If larger than 8mb, don't try to email it
 
 #
-# Send an email
 #
+string1="Attachment $(file --brief --preserve-date --mime-type --mime-encoding -L $backup_file 2> /dev/null )"
+string2="pg_dump process returned exit code: $pgdump_exit"
 
-#pager test.mail
-printf "Attachment $(file --brief --preserve-date --mime-type --mime-encoding -L $backup_file) \r pg_dump process returned exit code: $pgdump_exit" | mutt "$recipient" -s "SUSIE backup for $(date)" -a "$backup_file" "$log_file"
+printf "$string1"'\r\n'"$string2"'\r\n' | mutt "$recipient" -s "SUSIE backup for $(date)" -a "$backup_file" "$log_file"
+
+# }}}
+
+# vim: ft=sh foldmethod=marker
