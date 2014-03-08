@@ -68,7 +68,12 @@ dump_path="$HOME/backup/"
 current_date="$(date +%Y-%m-%d__%H-%M-%S)"
 backup_file="$dump_path$current_date.backup"
 log_file="$dump_path$current_date.log"
-recipient="ryan@sierrautility.net"
+
+if [[ -n "$1" ]]; then
+  recipient="$1"
+else
+  recipient="ryan@sierrautility.net"
+fi
 
   # check dependencies
 if [[ ! -d "$dump_path" ]]; then
