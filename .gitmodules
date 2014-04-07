@@ -1,0 +1,3 @@
+[submodule "csv2xls"]
+	path = csv2xls
+	url = https://github.com/ferkulat/csv2xls.git
