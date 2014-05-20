@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+# GNU bash, version 4.2.25(1)-release (x86_64-pc-linux-gnu)
+#
+# © Copyright 2014 Ryan Delaney. All rights reserved.
+# This work is distributed WITHOUT ANY WARRANTY whatsoever; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the README file for additional terms and conditions on your use of this
+# software.
+#
+# Functions {{{1
+verbose() {
+  if [[ "$verbose" = "1" ]]; then
+    echo "$1" >&2
+  fi
+}
+
+error() {
+  echo "$1" >&2
+}
+
+cleanup() {
+  rm -f "$bodyfile"
+}
+# }}}
+# Usage {{{1
+#
+usage() {
+cat <<EOD
+file2email
+© Copyright 2014 Ryan Delaney. All rights reserved.
+This work is distributed WITHOUT ANY WARRANTY whatsoever; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the README file for additional terms and conditions on your use of this
+software.
+Web site: http://github.com/rpdelaney
+
+file2email reads file paths on standard input and sends the files in an email
+
+Usage: file2email --recipient [RECIPIENT]
+
+Options
+  -?, --help                  print this help and exit
+  -r, --recipient [ADDRESS]   email address for the recipient
+  -v, --verbose               increase verbosity
+EOD
+exit 1
+}
+# }}}
+# Parameters {{{1
+#
+while :
+do
+  case "$1" in
+    --help | -\?)
+      usage
+      exit 1
+      ;;
+    -v | --verbose)
+      # Each instance of -v adds 1 to verbosity
+      local verbose=$((verbose+1))
+      shift
+      ;;
+    -r | --recipient)
+      recipient="$2"
+      shift
+      ;;
+    --) # End of all options
+      shift
+      break
+      ;;
+    -*)
+      echo "FATAL: Unknown option : $1" >&2
+      exit 1
+      shift
+      ;;
+    *)  # no more options. Stop while loop
+      break
+      ;;
+  esac
+done
+# }}}
+# Validate {{{1
+# }}}
+# Sandbox {{{1
+bodyfile="$(mktemp --suffix=.body.file2email)"
+trap 'cleanup' INT QUIT TERM EXIT
+# }}}
+# Do work {{{1
+  # Set recipient {{{2
+if [[ -z "$recipient" ]]; then
+  recipient="ryan@sierrautility.net"
+fi
+  # }}}
+# Read in the files {{{2
+echo "Files attached: $bodystring" > "$bodyfile"
+while read file; do
+  attstring="$attstring"'-a '"$file"' '
+  resultmime="$(file --brief --preserve-date --mime-type --mime-encoding -L "$file")"
+  printf "%s %s \r\r" "$file" "$resultmime" >> "$bodyfile"
+done
+
+if [[ -z "$attstring" ]]; then
+  error "FATAL: Attachments not optional."
+  exit 1
+fi
+# }}}
+# Send an email {{{2
+#cat "$bodyfile" | mutt "$recipient" -e 'unset record' -s "Query executed $current_date" "$attachmentstring"
+cat "$bodyfile" | mutt $recipient -e 'unset record' -s 'Query executed' $attstring
+# }}}
+# }}}
+
+# vim: ft=sh foldmethod=marker:

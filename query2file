@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+# GNU bash, version 4.2.25(1)-release (x86_64-pc-linux-gnu)
+#
+# © Copyright 2014 Ryan Delaney. All rights reserved.
+# This work is distributed WITHOUT ANY WARRANTY whatsoever; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the README file for additional terms and conditions on your use of this
+# software.
+#
+# Usage function {{{1
+#
+usage() {
+cat <<EOD
+query2file
+© Copyright 2014 Ryan Delaney. All rights reserved.
+Web site: http://github.com/rpdelaney
+
+query2file performs a query in postgresql and saves the output to a file.
+
+Usage: query2file [OPTION] -- [QUERY]
+
+Options
+  -?, --help                  print this help and exit
+  -v, --verbose               increase verbosity
+  -o, --output [FILE]         where to put the output file
+  -m, --html                  use html formatting
+  -c, --csv                   use csv formatting
+  -x, --text                  use text formatting
+  -e, --excel                 use Excel(tm) 2003
+EOD
+exit 1
+}
+# }}}
+# Parameters {{{1
+#
+while :
+do
+  case $1 in
+    --help | -\?)
+      usage
+      exit 0
+      ;;
+    -v | --verbose)
+      # Each instance of -v adds 1 to verbosity
+      local verbose=$((verbose+1))
+      shift
+      ;;
+    -o | --output)
+      outputfile="$1"
+      shift
+      ;;
+    -c | --csv)
+      csv="1"
+      shift
+      ;;
+    -m | --html)
+      html="1"
+      shift
+      ;;
+    -x | --text)
+      txt="1"
+      shift
+      ;;
+    -e | --excel)
+      excel="1"
+      shift
+      ;;
+    --) # End of all options
+      shift
+      break
+      ;;
+    -*)
+      echo "FATAL: Unknown option : $1" >&2
+      exit 1
+      shift
+      ;;
+    *)  # no more options. Stop while loop
+      break
+      ;;
+  esac
+done
+# }}}
+# Variables {{{1
+query="$@"
+current_date="$(date +%Y-%m-%d__%H-%M-%S)"
+tmpdir="${TMPDIR-/tmp}"
+# }}}
+# Dependencies {{{
+#if ! type basedir &> /dev/null; then echo "ERROR: Missing dependency: basedir" 1>&2; exit 1; fi
+if ! type psql &> /dev/null; then echo "ERROR: Missing dependency: psql" 1>&2; exit 1; fi
+if ! type csv2xlsx.py &> /dev/null; then echo "ERROR: Missing dependency: csv2xlsx.py" 1>&2; exit 1; fi
+if ! type mutt &> /dev/null; then echo "ERROR: Missing dependency: mutt" 1>&2; exit 1; fi
+# }}}
+# Do your business {{{1
+#
+  # temporary files {{{2
+logfile="$tmpdir"/query.txt
+htmlfile="$tmpdir"/output.html
+csvfile="$tmpdir"/output.csv
+excelfile="$tmpdir"/output.xls
+bodyfile="$tmpdir"/body
+  # }}}
+  # query2html {{{2
+if [[ -n "$html" ]]; then
+  psql --username="ryan" --dbname="susie" --no-psqlrc --html --output="$htmlfile" --log-file="$logfile" -c "$query"
+  echo "$htmlfile"
+fi
+  # }}}
+  # query2csv {{{2
+if [[ -n "$csv" ]] || [[ -n "$excel" ]]; then
+  if psql --username="ryan" --dbname="susie" --no-psqlrc --no-align --output="$csvfile" --log-file="$logfile" -c "$query" ; then
+# sed -e 's@"@#@g' -e 's@|@","@g' -e 's@^@"@' -e 's@$@"@' -e 's@""@"NULL"@g' -e '$d' "$csvfile" > "/tmp/output2.csv"
+# csvfile="/tmp/output2.csv"
+  echo "$csvfile"
+      # csv2excel {{{3
+    if [[ -n "$excel" ]]; then
+      # If the value of $csvfile is different, this might be unexpected. Better to use `basedir $csvfile` to save to the same directory
+      xlsxfile="$tmpdir"/output.xlsx
+      csv2xlsx.py "$csvfile" && echo "$xlsxfile"
+    fi
+      # }}}
+  fi
+fi
+  # }}}
+# }}}
+
+#rm "$queryfile"
+#rm "$resultfile"
+
+# vim: set ft=sh foldmethod=marker foldlevel=0 :
