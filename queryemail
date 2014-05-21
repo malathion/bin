@@ -26,6 +26,10 @@ do
       local verbose=$((verbose+1))
       shift
       ;;
+    -q | --query)
+      query="$2"
+      shift
+      ;;
     -r | --recipient)
       recipient="$2"
       shift
@@ -49,6 +53,6 @@ done
 if ! type query2file &> /dev/null; then echo "ERROR: Missing dependency: query2file" 1>&2; exit 1; fi
 if ! type file2email &> /dev/null; then echo "ERROR: Missing dependency: file2email" 1>&2; exit 1; fi
 
-file2email $( query2file "$1" )
+query2file -m -e -- "$query" | file2email -r "$recipient" && rm -f /tmp/output*
 
 # vim: ft=sh foldmethod=marker:
