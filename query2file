@@ -7,6 +7,17 @@
 # See the README file for additional terms and conditions on your use of this
 # software.
 #
+# Functions {{{1
+verbose() {
+  if [[ "$verbose" = "1" ]]; then
+    echo "$1" >&2
+  fi
+}
+
+error() {
+  echo "$1" >&2
+}
+# }}}
 # Usage function {{{1
 #
 usage() {
@@ -80,6 +91,13 @@ do
   esac
 done
 # }}}
+# Validation {{{
+if [[ -z "$html""$excel""$csv""$txt" ]]; then
+  error "Error: Output format not specified."
+  error "Try 'query2file -h' for usage information."
+  exit 1
+fi
+# }}}
 # Variables {{{1
 query="$@"
 current_date="$(date +%Y-%m-%d__%H-%M-%S)"
@@ -91,8 +109,7 @@ if ! type psql &> /dev/null; then echo "ERROR: Missing dependency: psql" 1>&2; e
 if ! type csv2xlsx.py &> /dev/null; then echo "ERROR: Missing dependency: csv2xlsx.py" 1>&2; exit 1; fi
 if ! type mutt &> /dev/null; then echo "ERROR: Missing dependency: mutt" 1>&2; exit 1; fi
 # }}}
-# Do your business {{{1
-#
+# Main {{{1
   # temporary files {{{2
 logfile="$tmpdir"/query.txt
 htmlfile="$tmpdir"/output.html
