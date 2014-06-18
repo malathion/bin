@@ -28,14 +28,15 @@ Web site: http://github.com/rpdelaney
 
 query2file performs a query in postgresql and saves the output to a file.
 
-Usage: query2file [OPTION] -- [QUERY]
+Usage: query2file [OPTION] -- -c "QUERY"
+or     query2file [OPTION] -- -f PATH
 
 Options
   -?, --help                  print this help and exit
   -v, --verbose               increase verbosity
   -o, --output [FILE]         where to put the output file
   -m, --html                  use html formatting
-  -c, --csv                   use csv formatting
+  -s, --csv                   use csv formatting
   -x, --text                  use text formatting
   -e, --excel                 use Excel(tm) 2003
 EOD
@@ -60,7 +61,7 @@ do
       outputfile="$1"
       shift
       ;;
-    -c | --csv)
+    -s | --csv)
       csv="1"
       shift
       ;;
@@ -91,7 +92,38 @@ do
   esac
 done
 # }}}
+# Parameters {{{1
+#
+while :
+do
+  case $1 in
+    -f | --file)
+      inputfile="$(realpath "$2")"
+      inputcommand="$1 $inputfile"
+      shift
+      shift
+      ;;
+    -c | --command)
+      inputcommand="$1 $2"
+      shift
+      shift
+      ;;
+    *)  # no more options. Stop while loop
+      break
+      ;;
+  esac
+done
+# }}}
 # Validation {{{
+if [[ -n "$inputfile" ]] && [[ ! -f "$inputfile" ]]; then
+  error "Error: Input file not found."
+  exit 1
+fi
+if [[ -z "$inputcommand" ]]; then
+  error "Error: Command not specified, or unrecognized syntax."
+  error "Try 'query2file -h' for usage information."
+  exit 1
+fi
 if [[ -z "$html""$excel""$csv""$txt" ]]; then
   error "Error: Output format not specified."
   error "Try 'query2file -h' for usage information."
@@ -99,7 +131,6 @@ if [[ -z "$html""$excel""$csv""$txt" ]]; then
 fi
 # }}}
 # Variables {{{1
-query="$@"
 current_date="$(date +%Y-%m-%d__%H-%M-%S)"
 tmpdir="${TMPDIR-/tmp}"
 # }}}
@@ -117,15 +148,14 @@ csvfile="$tmpdir"/output.csv
 excelfile="$tmpdir"/output.xls
 bodyfile="$tmpdir"/body
   # }}}
-  # query2html {{{2
+  # inputcommand2html {{{2
 if [[ -n "$html" ]]; then
-  psql --username="ryan" --dbname="susie" --no-psqlrc --html --output="$htmlfile" --log-file="$logfile" -c "$query"
-  echo "$htmlfile"
+  psql --dbname="susie" --no-psqlrc --html --output="$htmlfile" --log-file="$logfile" $inputcommand && echo "$htmlfile" || { error "Error: psql exited with nonzero status." ; exit 1 ; }
 fi
   # }}}
   # query2csv {{{2
 if [[ -n "$csv" ]] || [[ -n "$excel" ]]; then
-  if psql --username="ryan" --dbname="susie" --no-psqlrc --no-align --output="$csvfile" --log-file="$logfile" -c "$query" ; then
+  if psql --username="ryan" --dbname="susie" --no-psqlrc --no-align --output="$csvfile" --log-file="$logfile" $inputcommand ; then
 # sed -e 's@"@#@g' -e 's@|@","@g' -e 's@^@"@' -e 's@$@"@' -e 's@""@"NULL"@g' -e '$d' "$csvfile" > "/tmp/output2.csv"
 # csvfile="/tmp/output2.csv"
   echo "$csvfile"
