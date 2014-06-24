@@ -4,3 +4,6 @@
 [submodule "fdupes"]
 	path = fdupes
 	url = git@github.com:tobiasschulz/fdupes.git
+[submodule "xml2json"]
+	path = xml2json
+	url = git@github.com:hay/xml2json.git
