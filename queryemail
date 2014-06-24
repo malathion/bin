@@ -12,6 +12,25 @@ error() {
   echo "$1" >&2
 }
 # }}}
+# Usage {{{1
+#
+usage() {
+cat <<EOD
+queryemail
+© Copyright 2014 Ryan Delaney. All rights reserved.
+Web site: http://github.com/rpdelaney
+
+queryemail takes a postgreSQL query and emails the results to a given address
+
+Usage: queryemail [OPTION] "RECIPIENT" "QUERY"
+
+Options
+  -?, --help                  print this help and exit
+  -v, --verbose               increase verbosity
+EOD
+exit 1
+}
+# }}}
 # Parameters {{{1
 #
 while :
@@ -24,10 +43,6 @@ do
     -v | --verbose)
       # Each instance of -v adds 1 to verbosity
       local verbose=$((verbose+1))
-      shift
-      ;;
-    -q | --query)
-      query="$2"
       shift
       ;;
     -r | --recipient)
@@ -50,9 +65,13 @@ do
 done
 # }}}
 
+recipient="$1"
+query="$2"
+
 if ! type query2file &> /dev/null; then echo "ERROR: Missing dependency: query2file" 1>&2; exit 1; fi
 if ! type file2email &> /dev/null; then echo "ERROR: Missing dependency: file2email" 1>&2; exit 1; fi
 
-query2file -m -e -- "$query" | file2email -r "$recipient" && rm -f /tmp/output*
+set -x
+query2file -m -e -- $query | file2email -r "$recipient" && rm -f /tmp/output*
 
 # vim: ft=sh foldmethod=marker:
