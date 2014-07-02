@@ -7,3 +7,6 @@
 [submodule "xml2json"]
 	path = xml2json
 	url = git@github.com:hay/xml2json.git
+[submodule "csv2table"]
+	path = csv2table
+	url = https://github.com/f0rk/csv2table.git
