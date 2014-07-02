@@ -8,4 +8,4 @@
 # software.
 #
 
-queryemail "ryan@sierrautility.net" "-f /home/ryan/jobs/unpaidInvoices.pgsql"
+queryemail "mara@sierrautility.net ryan@sierrautility.net" "-f /home/ryan/jobs/unpaidInvoices.pgsql"
