@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# GNU bash, version 3.2.57(1)-release (x86_64-apple-darwin14)
+#
+# © Copyright 2016 Ryan Delaney. All rights reserved.
+# This work is distributed WITHOUT ANY WARRANTY whatsoever; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the README file for additional terms and conditions on your use of this
+# software.
+#
+
+mvim -d "$1" "$2"
+
+# vim: filetype=sh foldmethod=marker shiftwidth=2 expandtab softtabstop=4:
