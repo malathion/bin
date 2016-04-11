@@ -1,0 +1,28 @@
+#!/usr/bin/expect
+#
+# © Copyright 2016 Boku, Inc. All rights reserved.
+#
+set timeout 3
+
+set username "rdelaney"
+set password "s8aspAjA"
+
+log_user 0
+spawn ssh qa01app-706
+
+while {1} {
+  expect {
+    eof                             {break}
+    "The authenticity of host"      {send_user "\[INFO\] Confirming authenticity of host." ; send "yes\r"}
+    "*\]"                           {send_user "\[INFO\] Authenticity pre-verified. Continuing..." ; break}
+  }
+}
+
+send "sudo su - dbsvc\r"
+expect {
+  "*password for $username:" {send_user "\n\[INFO\] Sending password for sudo..." ; send "$password\r"}
+}
+
+interact
+
+# vim: filetype=expect foldmethod=marker shiftwidth=2 expandtab softtabstop=4:
