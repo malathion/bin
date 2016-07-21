@@ -48,7 +48,7 @@ boilerplate() {
   printf '%s\n' '#!/usr/bin/env bash'
   printf '%s %s\n' '#' "$(bash --version | head -n1)"
   printf '%s\n' '#'
-  printf '%s %s %s\n' '# © Copyright' "$(date +'%Y')" 'Boku, Inc. All rights reserved.'
+  printf '%s %s %s\n' '# © Copyright' "$(date +'%Y')" 'Google, Inc. All rights reserved.'
 cat <<EOD
 #
 :
