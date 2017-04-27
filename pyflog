@@ -47,17 +47,12 @@ fi
 boilerplate() {
   printf '%s\n' '#!/usr/bin/env python3'
   printf '%s\n' '# -*- coding: UTF-8 -*-'
-  printf '%s %s\n' '#' "$(python --version)"
+  printf '%s %s\n' '#' "$(python3 --version 2>&1)"
   printf '%s\n' '#'
-  printf '__author__ = "%s"\n' 'Ryan Delaney (ryan DOT delaney AT gmail DOT com)'
+  printf '__author__ = "%s"\n' 'Ryan Delaney (rdelaney@apple.com)'
   printf '__date__ = "%s"\n' "$(date +'%Y-%m-%d')"
-  printf '__copyright__ = %s %s %s\n' '"""© Copyright' "$(date +'%Y')" 'Ryan Delaney. All rights reserved.'
+  printf '__copyright__ = %s %s %s\n' '"""© Copyright' "$(date +'%Y')" 'Apple Inc. All rights reserved."""'
 cat <<EOD
- This work is distributed WITHOUT ANY WARRANTY whatsoever; without even the
- implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- See the README file for additional terms and conditions on your use of this
- software.
-"""
 
 
 def main():
