@@ -51,7 +51,12 @@ boilerplate() {
   printf '%s %s %s\n' '# © Copyright' "$(date +'%Y')" 'Apple Inc. All rights reserved.'
 cat <<EOD
 #
-:
+
+main() {
+  :
+}
+
+main
 # vim: filetype=sh foldmethod=marker shiftwidth=2 expandtab softtabstop=4:
 EOD
 }
