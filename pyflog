@@ -49,9 +49,9 @@ boilerplate() {
   printf '%s\n' '# -*- coding: UTF-8 -*-'
   printf '%s %s\n' '#' "$(python3 --version 2>&1)"
   printf '%s\n' '#'
-  printf '__author__ = "%s"\n' 'Ryan Delaney (rdelaney@apple.com)'
+  printf '__author__ = "%s"\n' 'Ryan Delaney (rydelane@amazon.com)'
   printf '__date__ = "%s"\n' "$(date +'%Y-%m-%d')"
-  printf '__copyright__ = %s %s %s\n' '"""© Copyright' "$(date +'%Y')" 'Apple Inc. All rights reserved."""'
+  printf '__copyright__ = %s %s %s\n' '"""© Copyright' "$(date +'%Y')" 'Amazon.com, Inc. All rights reserved."""'
 cat <<EOD
 
 
